@@ -6,6 +6,7 @@
 process BUSCO {
     tag "$meta.id"
     label 'process_medium'
+    publishDir "${params.outdir}/busco", mode: params.publish_dir_mode
 
     conda "bioconda::busco=5.8.3"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
@@ -18,7 +19,7 @@ process BUSCO {
     val mode
 
     output:
-    tuple val(meta), path("*-busco/"), emit: busco_dir
+    tuple val(meta), path("*-busco"), emit: busco_dir
     tuple val(meta), path("*-busco/short_summary.*.txt"), emit: summary
     path "versions.yml", emit: versions
 
@@ -29,17 +30,20 @@ process BUSCO {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    # Create output directory
-    mkdir -p ${prefix}-busco
-
-    # Run BUSCO
-    busco \\
+    # Run BUSCO (it creates its own output directory)
+    busco -f \\
         --in ${assembly} \\
         --out ${prefix}-busco \\
         --lineage_dataset ${lineage} \\
         --mode ${mode} \\
         --cpu ${task.cpus} \\
         ${args}
+
+    # Ensure output directory exists for Nextflow
+    if [ ! -d "${prefix}-busco" ]; then
+        echo "ERROR: BUSCO did not create expected output directory"
+        exit 1
+    fi
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

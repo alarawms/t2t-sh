@@ -1,0 +1,2 @@
+sample,hifi_reads,ont_reads,hic_reads_1,hic_reads_2,genome_size
+ecoli_k12,test_data/ecoli_k12_hifi_5x.fastq.gz,,,,4.6m

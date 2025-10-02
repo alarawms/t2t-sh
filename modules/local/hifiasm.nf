@@ -6,6 +6,7 @@
 process HIFIASM {
     tag "$meta.id"
     label 'process_very_high'
+    publishDir "${params.outdir}/assembly", mode: params.publish_dir_mode
 
     conda "bioconda::hifiasm=0.25.0"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?

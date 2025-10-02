@@ -2,6 +2,7 @@
 .nextflow*
 work/
 results/
+results_*/
 .nextflow.log*
 
 # Singularity
@@ -29,9 +30,11 @@ __pycache__/
 *.pyo
 *.egg-info/
 
-# Test data (comment out if tracking test data)
-# test_data/*.fastq.gz
-# test_data/*.fasta
+# Test data (large files excluded)
+test_data/*.fastq.gz
+test_data/*.fasta
+test_data/*.fna.gz
+test_data/*.fq.gz
 
 # Temporary files
 *.tmp
@@ -39,4 +42,7 @@ __pycache__/
 *.bak
 
 EEXECUTION_STRATEGY.md
-plan.md 
+plan.md
+docs/test_results.md
+summary.txt
+samplesheet.csv

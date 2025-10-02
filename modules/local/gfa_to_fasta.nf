@@ -6,6 +6,7 @@
 process GFA_TO_FASTA {
     tag "$meta.id"
     label 'process_single'
+    publishDir "${params.outdir}/assembly", mode: params.publish_dir_mode
 
     conda "conda-forge::gawk=5.1.0"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
