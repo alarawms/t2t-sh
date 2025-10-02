@@ -43,6 +43,7 @@ test_data/*.fq.gz
 
 EEXECUTION_STRATEGY.md
 plan.md
-docs/test_results.md
+docs/*.md
+!docs/README.md
 summary.txt
 samplesheet.csv
