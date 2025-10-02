@@ -7,10 +7,10 @@ process HIFIASM {
     tag "$meta.id"
     label 'process_very_high'
 
-    conda "bioconda::hifiasm=0.19.9"
+    conda "bioconda::hifiasm=0.25.0"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/hifiasm:0.19.9--h2e03b76_0' :
-        'quay.io/biocontainers/hifiasm:0.19.9--h2e03b76_0' }"
+        'https://depot.galaxyproject.org/singularity/hifiasm:0.25.0--h5ca1c30_0' :
+        'quay.io/biocontainers/hifiasm:0.25.0--h5ca1c30_0' }"
 
     input:
     tuple val(meta), path(hifi_reads)
