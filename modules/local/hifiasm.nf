@@ -30,10 +30,13 @@ process HIFIASM {
     script:
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
+    // Use -f0 for small test datasets to disable bloom filter (saves memory)
+    def bloom_flag = task.memory.toGiga() < 20 ? '-f0' : ''
     """
     hifiasm \\
         -o ${prefix} \\
         -t ${task.cpus} \\
+        ${bloom_flag} \\
         ${args} \\
         ${hifi_reads}
 
