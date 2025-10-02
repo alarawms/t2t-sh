@@ -51,9 +51,24 @@ workflow T2T_ASSEMBLY {
     ch_versions = Channel.empty()
 
     //
-    // MODULE: Run Hifiasm assembly
+    // Combine all read types for Hifiasm
+    // Join HiFi with ONT and Hi-C by sample meta.id
     //
-    HIFIASM(ch_hifi)
+    ch_hifi
+        .join(ch_ont, remainder: true)
+        .join(ch_hic, remainder: true)
+        .map { meta, hifi, ont, hic ->
+            // Provide default empty values for missing reads
+            def ont_reads = ont ?: file('NO_ONT_FILE')
+            def hic_reads = hic ?: file('NO_HIC_FILE')
+            [meta, hifi, ont_reads, hic_reads]
+        }
+        .set { ch_all_reads }
+
+    //
+    // MODULE: Run Hifiasm assembly with all available read types
+    //
+    HIFIASM(ch_all_reads)
     ch_versions = ch_versions.mix(HIFIASM.out.versions)
 
     //

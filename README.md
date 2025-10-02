@@ -81,16 +81,19 @@ nextflow run main.nf \\
 
 ## Pipeline Overview
 
-### Phase 1 Workflow
+### Phase 1-2 Workflow
 
 ```
-HiFi Reads → Hifiasm Assembly → GFA to FASTA → BUSCO QC → Results
+HiFi + ONT + Hi-C Reads → Hifiasm Assembly → GFA to FASTA → BUSCO QC → Results
 ```
 
 **Modules:**
-1. **Hifiasm**: Haplotype-resolved genome assembly
+1. **Hifiasm** (v0.25.0): Haplotype-resolved genome assembly with multi-read support
+   - HiFi reads (required): Primary assembly
+   - ONT ultra-long reads (optional): `--ul` for improved contiguity
+   - Hi-C reads (optional): `--h1`, `--h2` for phasing and haplotype separation
 2. **GFA to FASTA**: Convert assembly format for downstream analysis
-3. **BUSCO**: Genome completeness assessment
+3. **BUSCO** (v5.8.3): Genome completeness assessment
 
 ### Test Data
 
@@ -258,10 +261,11 @@ nextflow run main.nf --busco_lineage null --input samples.csv
 
 ## Development Roadmap
 
-- [x] **Phase 1**: Core assembly (Hifiasm + BUSCO) ← Current
-- [ ] **Phase 2**: Hi-C scaffolding (Juicer + 3D-DNA + Gap closing)
-- [ ] **Phase 3**: Annotation (RepeatMasker + Gene prediction)
-- [ ] **Phase 4**: Production polish (Docs + CI/CD + Benchmarks)
+- [x] **Phase 1**: Core HiFi assembly (Hifiasm + BUSCO)
+- [x] **Phase 2**: Multi-read integration (ONT + Hi-C in Hifiasm) ← Current
+- [ ] **Phase 3**: Hi-C scaffolding (Juicer + 3D-DNA) and ONT gap closing
+- [ ] **Phase 4**: Annotation (RepeatMasker + Gene prediction)
+- [ ] **Phase 5**: Production polish (Docs + CI/CD + Benchmarks)
 
 ## Contributing
 
