@@ -95,8 +95,8 @@ scancel <jobid>
 
 - **Input data**: `/ibex/user/$USER/data/`
 - **Results**: Specify with second argument to `submit_ibex.sh`
-- **Work directory**: Automatic cleanup after completion
-- **Singularity cache**: `/ibex/user/$USER/.singularity/nf_images/`
+- **Work directory**: `work/` (in project directory)
+- **Singularity cache**: `work/singularity_cache/` (automatically created in work directory)
 
 ## Troubleshooting
 
