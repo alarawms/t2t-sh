@@ -1,10 +1,15 @@
 #!/usr/bin/env nextflow
 /*
 ========================================================================================
-    T2T Genome Assembly Pipeline - Phase 1
+    T2T Genome Assembly Pipeline
 ========================================================================================
     Github : https://github.com/alarawms/t2t-sh
     Author : KAUST Bioinformatics
+
+    Supports multiple input types:
+    - HiFi reads (required) - PacBio HiFi long reads
+    - ONT reads (optional) - Oxford Nanopore for gap closing
+    - Hi-C reads (optional) - Chromosome scaffolding
 ----------------------------------------------------------------------------------------
 */
 
@@ -24,7 +29,8 @@ WorkflowMain.initialise(workflow, params, log)
 ========================================================================================
 */
 
-include { HIFIASM       } from './modules/local/hifiasm'
+include { INPUT_CHECK } from './subworkflows/local/input_check'
+include { HIFIASM     } from './modules/local/hifiasm'
 include { GFA_TO_FASTA  } from './modules/local/gfa_to_fasta'
 include { BUSCO         } from './modules/local/busco'
 
@@ -37,7 +43,9 @@ include { BUSCO         } from './modules/local/busco'
 workflow T2T_ASSEMBLY {
 
     take:
-    ch_input  // channel: [ val(meta), path(hifi_reads) ]
+    ch_hifi  // channel: [ val(meta), path(hifi_reads) ]
+    ch_ont   // channel: [ val(meta), path(ont_reads) ]
+    ch_hic   // channel: [ val(meta), [path(hic_r1), path(hic_r2)] ]
 
     main:
     ch_versions = Channel.empty()
@@ -45,7 +53,7 @@ workflow T2T_ASSEMBLY {
     //
     // MODULE: Run Hifiasm assembly
     //
-    HIFIASM(ch_input)
+    HIFIASM(ch_hifi)
     ch_versions = ch_versions.mix(HIFIASM.out.versions)
 
     //
@@ -66,6 +74,21 @@ workflow T2T_ASSEMBLY {
         ch_versions = ch_versions.mix(BUSCO.out.versions)
     }
 
+    //
+    // TODO: Phase 2 - ONT Gap Closing
+    // if (ch_ont) {
+    //     LR_GAPCLOSER(HIFIASM.out.primary_contigs, ch_ont)
+    // }
+    //
+
+    //
+    // TODO: Phase 2 - Hi-C Scaffolding
+    // if (ch_hic) {
+    //     JUICER(HIFIASM.out.primary_contigs, ch_hic)
+    //     THREEDNA(JUICER.out.hic_contacts)
+    // }
+    //
+
     emit:
     assembly_gfa   = HIFIASM.out.gfa
     assembly_fasta = GFA_TO_FASTA.out.fasta
@@ -82,27 +105,43 @@ workflow T2T_ASSEMBLY {
 workflow {
 
     //
-    // SUBWORKFLOW: Parse input samplesheet
+    // SUBWORKFLOW: Check input samplesheet and parse reads
     //
-    ch_input = Channel
-        .fromPath(params.input)
-        .splitCsv(header: true, sep: ',')
-        .map { row ->
-            def meta = [:]
-            meta.id = row.sample_id
+    INPUT_CHECK(params.input)
 
-            def reads = file(row.hifi_reads)
-            if (!reads.exists()) {
-                exit 1, "ERROR: HiFi reads file does not exist: ${row.hifi_reads}"
+    //
+    // INFO: Log data availability
+    //
+    INPUT_CHECK.out.hifi
+        .count()
+        .subscribe { count ->
+            log.info "Found ${count} sample(s) with HiFi reads"
+        }
+
+    INPUT_CHECK.out.ont
+        .count()
+        .subscribe { count ->
+            if (count > 0) {
+                log.info "Found ${count} sample(s) with ONT reads (Phase 2 feature)"
             }
+        }
 
-            return [ meta, reads ]
+    INPUT_CHECK.out.hic
+        .count()
+        .subscribe { count ->
+            if (count > 0) {
+                log.info "Found ${count} sample(s) with Hi-C reads (Phase 2 feature)"
+            }
         }
 
     //
     // WORKFLOW: Run Phase 1 assembly pipeline
     //
-    T2T_ASSEMBLY(ch_input)
+    T2T_ASSEMBLY(
+        INPUT_CHECK.out.hifi,
+        INPUT_CHECK.out.ont,
+        INPUT_CHECK.out.hic
+    )
 }
 
 /*
@@ -121,6 +160,10 @@ workflow.onComplete {
     log.info "Work Dir     : ${workflow.workDir}"
     log.info "Exit status  : ${workflow.exitStatus}"
     log.info ""
+
+    if (workflow.success) {
+        log.info "Results saved to: ${params.outdir}"
+    }
 }
 
 workflow.onError {

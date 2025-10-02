@@ -1,2 +1,2 @@
-sample_id,hifi_reads
-test_tiny,/home/alarawms/nfs/dev/t2t-sh/bin/../test_data/test_hifi_tiny.fastq.gz
+sample,hifi_reads,ont_reads,hic_reads_1,hic_reads_2,genome_size
+test_sample,test_data/test_hifi_tiny.fastq.gz,,,,10m

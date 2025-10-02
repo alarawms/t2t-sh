@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "$id": "https://raw.githubusercontent.com/alarawms/t2t-sh/main/assets/schema_input.json",
+  "title": "T2T Assembly Pipeline - Input Samplesheet Schema",
+  "description": "Schema for the samplesheet used as input for the T2T genome assembly pipeline",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "sample": {
+        "type": "string",
+        "pattern": "^[a-zA-Z0-9_-]+$",
+        "errorMessage": "Sample name must be provided and cannot contain spaces",
+        "meta": ["id"]
+      },
+      "hifi_reads": {
+        "type": "string",
+        "format": "file-path",
+        "pattern": "^\\S+\\.(fastq|fq|fastq\\.gz|fq\\.gz)$",
+        "errorMessage": "HiFi reads file must be provided, cannot contain spaces and must have extension .fastq, .fq, .fastq.gz or .fq.gz"
+      },
+      "ont_reads": {
+        "type": "string",
+        "format": "file-path",
+        "pattern": "^(\\S+\\.(fastq|fq|fastq\\.gz|fq\\.gz))?$",
+        "errorMessage": "ONT reads file cannot contain spaces and must have extension .fastq, .fq, .fastq.gz or .fq.gz"
+      },
+      "hic_reads_1": {
+        "type": "string",
+        "format": "file-path",
+        "pattern": "^(\\S+\\.(fastq|fq|fastq\\.gz|fq\\.gz))?$",
+        "errorMessage": "Hi-C forward reads file cannot contain spaces and must have extension .fastq, .fq, .fastq.gz or .fq.gz"
+      },
+      "hic_reads_2": {
+        "type": "string",
+        "format": "file-path",
+        "pattern": "^(\\S+\\.(fastq|fq|fastq\\.gz|fq\\.gz))?$",
+        "errorMessage": "Hi-C reverse reads file cannot contain spaces and must have extension .fastq, .fq, .fastq.gz or .fq.gz"
+      },
+      "genome_size": {
+        "type": "string",
+        "pattern": "^[0-9]+(\\.[0-9]+)?[kKmMgGtT]?$",
+        "errorMessage": "Genome size must be a number followed by optional unit (k, m, g, t). Examples: 3.2g, 120m, 500k"
+      }
+    },
+    "required": ["sample", "hifi_reads"]
+  }
+}

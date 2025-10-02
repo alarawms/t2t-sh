@@ -30,13 +30,19 @@ nextflow run main.nf -profile test,docker
 
 ### 1. Prepare Input Samplesheet
 
-Create a CSV file with your samples:
+Create a CSV file with your samples (supports HiFi, ONT, and Hi-C data):
 
 ```csv
-sample_id,hifi_reads
-sample1,/path/to/hifi_reads_1.fastq.gz
-sample2,/path/to/hifi_reads_2.fastq.gz
+sample,hifi_reads,ont_reads,hic_reads_1,hic_reads_2,genome_size
+sample1,/path/to/hifi.fastq.gz,,,,3.2g
+sample2,/path/to/hifi.fastq.gz,/path/to/ont.fastq.gz,,,500m
+sample3,/path/to/hifi.fastq.gz,,/path/to/hic_R1.fq.gz,/path/to/hic_R2.fq.gz,3.2g
 ```
+
+**Required**: `sample`, `hifi_reads`
+**Optional**: `ont_reads`, `hic_reads_1`, `hic_reads_2`, `genome_size`
+
+See [docs/samplesheet.md](docs/samplesheet.md) for detailed guide and examples.
 
 ### 2. Run Pipeline
 

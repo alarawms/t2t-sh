@@ -1,0 +1,5 @@
+sample,hifi_reads,ont_reads,hic_reads_1,hic_reads_2,genome_size
+sample1,/data/hifi/sample1.fastq.gz,,,3.2g
+sample2,/data/hifi/sample2.fastq.gz,/data/ont/sample2.fastq.gz,,120m
+sample3,/data/hifi/sample3.fastq.gz,,/data/hic/sample3_R1.fastq.gz,/data/hic/sample3_R2.fastq.gz,3.2g
+sample4,/data/hifi/sample4.fastq.gz,/data/ont/sample4.fastq.gz,/data/hic/sample4_R1.fastq.gz,/data/hic/sample4_R2.fastq.gz,500m

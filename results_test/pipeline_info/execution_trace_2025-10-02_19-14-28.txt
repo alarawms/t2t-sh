@@ -1,4 +1,0 @@
-task_id	hash	native_id	name	status	exit	submit	duration	realtime	%cpu	peak_rss	peak_vmem	rchar	wchar
-1	20/192411	290902	T2T_ASSEMBLY:HIFIASM (test_tiny)	FAILED	137	2025-10-02 19:14:39.208	41s	41s	-	-	-	-	-
-2	62/bdcbb0	293404	T2T_ASSEMBLY:HIFIASM (test_tiny)	FAILED	137	2025-10-02 19:15:20.530	19.6s	19.6s	-	-	-	-	-
-3	9f/2c4994	295004	T2T_ASSEMBLY:HIFIASM (test_tiny)	FAILED	137	2025-10-02 19:15:40.224	24.2s	24.1s	-	-	-	-	-
