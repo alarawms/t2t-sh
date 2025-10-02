@@ -19,6 +19,9 @@ A production-grade Nextflow pipeline for telomere-to-telomere (T2T) genome assem
 git clone https://github.com/alarawms/t2t-sh.git
 cd t2t-sh
 
+# Download test data
+./bin/download_test_data.sh tiny
+
 # Test installation
 nextflow run main.nf -profile test,docker
 ```
@@ -82,6 +85,20 @@ HiFi Reads → Hifiasm Assembly → GFA to FASTA → BUSCO QC → Results
 1. **Hifiasm**: Haplotype-resolved genome assembly
 2. **GFA to FASTA**: Convert assembly format for downstream analysis
 3. **BUSCO**: Genome completeness assessment
+
+### Test Data
+
+Multiple test datasets available:
+
+```bash
+# Quick test (~1 min)
+./bin/download_test_data.sh tiny
+
+# Real E. coli data (~10 min, requires SRA toolkit)
+./bin/download_test_data.sh ecoli
+```
+
+See [docs/test_data.md](docs/test_data.md) for detailed information.
 
 ## Parameters
 
