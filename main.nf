@@ -29,10 +29,13 @@ WorkflowMain.initialise(workflow, params, log)
 ========================================================================================
 */
 
-include { INPUT_CHECK } from './subworkflows/local/input_check'
-include { HIFIASM     } from './modules/local/hifiasm'
+include { INPUT_CHECK   } from './subworkflows/local/input_check'
+include { HIFIASM       } from './modules/local/hifiasm'
 include { GFA_TO_FASTA  } from './modules/local/gfa_to_fasta'
 include { BUSCO         } from './modules/local/busco'
+include { JUICER        } from './modules/local/juicer'
+include { THREEDNA      } from './modules/local/threedna'
+include { LR_GAPCLOSER  } from './modules/local/lr_gapcloser'
 
 /*
 ========================================================================================
@@ -78,7 +81,7 @@ workflow T2T_ASSEMBLY {
     ch_versions = ch_versions.mix(GFA_TO_FASTA.out.versions)
 
     //
-    // MODULE: Run BUSCO quality assessment
+    // MODULE: Run BUSCO quality assessment on initial assembly
     //
     if (params.busco_lineage) {
         BUSCO(
@@ -90,23 +93,69 @@ workflow T2T_ASSEMBLY {
     }
 
     //
-    // TODO: Phase 2 - ONT Gap Closing
-    // if (ch_ont) {
-    //     LR_GAPCLOSER(HIFIASM.out.primary_contigs, ch_ont)
-    // }
+    // Phase 3: Hi-C Scaffolding (when Hi-C reads available)
     //
+    ch_scaffolded = Channel.empty()
+
+    ch_hic
+        .join(GFA_TO_FASTA.out.fasta)
+        .map { meta, hic, fasta ->
+            [meta, fasta, hic[0], hic[1]]  // meta, assembly, hic_r1, hic_r2
+        }
+        .set { ch_juicer_input }
+
+    if (ch_juicer_input) {
+        //
+        // MODULE: Juicer - Hi-C read alignment
+        //
+        JUICER(ch_juicer_input)
+        ch_versions = ch_versions.mix(JUICER.out.versions)
+
+        //
+        // MODULE: 3D-DNA - Chromosome scaffolding
+        //
+        JUICER.out.merged_nodups
+            .join(GFA_TO_FASTA.out.fasta)
+            .map { meta, nodups, fasta ->
+                [meta, fasta, nodups]
+            }
+            .set { ch_threedna_input }
+
+        THREEDNA(ch_threedna_input)
+        ch_versions = ch_versions.mix(THREEDNA.out.versions)
+        ch_scaffolded = THREEDNA.out.scaffolds
+    } else {
+        ch_scaffolded = GFA_TO_FASTA.out.fasta
+    }
 
     //
-    // TODO: Phase 2 - Hi-C Scaffolding
-    // if (ch_hic) {
-    //     JUICER(HIFIASM.out.primary_contigs, ch_hic)
-    //     THREEDNA(JUICER.out.hic_contacts)
-    // }
+    // Phase 3: ONT Gap Closing (when ONT reads available)
     //
+    ch_final_assembly = Channel.empty()
+
+    ch_ont
+        .join(ch_scaffolded)
+        .map { meta, ont, scaffolds ->
+            [meta, scaffolds, ont]
+        }
+        .set { ch_gapcloser_input }
+
+    if (ch_gapcloser_input) {
+        //
+        // MODULE: LR_Gapcloser - Fill gaps with ONT reads
+        //
+        LR_GAPCLOSER(ch_gapcloser_input)
+        ch_versions = ch_versions.mix(LR_GAPCLOSER.out.versions)
+        ch_final_assembly = LR_GAPCLOSER.out.assembly
+    } else {
+        ch_final_assembly = ch_scaffolded
+    }
 
     emit:
     assembly_gfa   = HIFIASM.out.gfa
     assembly_fasta = GFA_TO_FASTA.out.fasta
+    scaffolds      = ch_scaffolded
+    final_assembly = ch_final_assembly
     busco_summary  = params.busco_lineage ? BUSCO.out.summary : Channel.empty()
     versions       = ch_versions
 }

@@ -1,6 +1,6 @@
 # T2T Genome Assembly Pipeline
 
-> **Phase 1**: Core assembly pipeline with HiFi reads and BUSCO quality assessment
+> **Phase 1-3**: Complete assembly pipeline with HiFi reads, Hi-C scaffolding, ONT gap closing, and BUSCO quality assessment
 
 A production-grade Nextflow pipeline for telomere-to-telomere (T2T) genome assembly, optimized for KAUST Ibex HPC and local execution.
 
@@ -81,10 +81,22 @@ nextflow run main.nf \\
 
 ## Pipeline Overview
 
-### Phase 1-2 Workflow
+### Complete Workflow (Phase 1-3)
 
 ```
-HiFi + ONT + Hi-C Reads → Hifiasm Assembly → GFA to FASTA → BUSCO QC → Results
+HiFi + ONT + Hi-C Reads
+    ↓
+Hifiasm Assembly (--ul for ONT, --h1/--h2 for Hi-C)
+    ↓
+GFA to FASTA
+    ↓
+BUSCO QC (Initial)
+    ↓
+[If Hi-C available] → Juicer → 3D-DNA Scaffolding
+    ↓
+[If ONT available] → LR_Gapcloser Gap Filling
+    ↓
+Final Assembly
 ```
 
 **Modules:**
@@ -94,6 +106,9 @@ HiFi + ONT + Hi-C Reads → Hifiasm Assembly → GFA to FASTA → BUSCO QC → R
    - Hi-C reads (optional): `--h1`, `--h2` for phasing and haplotype separation
 2. **GFA to FASTA**: Convert assembly format for downstream analysis
 3. **BUSCO** (v5.8.3): Genome completeness assessment
+4. **Juicer** (v1.6): Hi-C read alignment and contact map generation (Phase 3)
+5. **3D-DNA** (201008): Chromosome-level scaffolding using Hi-C contacts (Phase 3)
+6. **LR_Gapcloser** (v1.1): Gap filling using ONT ultra-long reads (Phase 3)
 
 ### Test Data
 
@@ -132,6 +147,15 @@ See [docs/test_data.md](docs/test_data.md) for detailed information.
 | `--busco_lineage` | `null` | BUSCO lineage dataset (e.g., 'eukaryota_odb10') |
 | `--busco_mode` | `'genome'` | BUSCO analysis mode |
 
+### Scaffolding Options (Phase 3)
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `--juicer_mapq` | `30` | Minimum MAPQ for Hi-C alignments |
+| `--threedna_rounds` | `3` | Number of 3D-DNA scaffolding rounds |
+| `--lr_gapcloser_min_length` | `80000` | Minimum ONT read length for gap closing |
+| `--lr_gapcloser_iterations` | `3` | Number of LR_Gapcloser iterations |
+
 ### Resource Limits
 
 | Parameter | Default | Description |
@@ -167,15 +191,25 @@ nextflow run main.nf -profile test,docker
 
 ```
 results/
-├── hifiasm/
+├── assembly/
 │   ├── sample1.gfa              # Assembly graph
 │   ├── sample1.p_ctg.gfa        # Primary contigs
 │   └── sample1.a_ctg.gfa        # Alternate contigs
 ├── fasta/
-│   └── sample1.fasta            # Converted assembly
+│   └── sample1.fasta            # Initial assembly FASTA
 ├── busco/
 │   └── sample1-busco/
-│       └── short_summary.*.txt  # BUSCO results
+│       └── short_summary.*.txt  # BUSCO completeness
+├── scaffolding/
+│   ├── juicer/
+│   │   └── sample1/
+│   │       └── aligned/merged_nodups.txt  # Hi-C contacts
+│   ├── 3ddna/
+│   │   ├── sample1.FINAL.fasta           # Scaffolded assembly
+│   │   └── sample1.FINAL.assembly        # Scaffold structure
+│   └── gapcloser/
+│       ├── sample1.gapclosed.fasta       # Gap-filled assembly
+│       └── sample1.gapclosed.log         # Gap closing statistics
 └── pipeline_info/
     ├── execution_report.html    # Execution report
     └── execution_timeline.html  # Timeline visualization
