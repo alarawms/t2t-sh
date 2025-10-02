@@ -1,0 +1,2 @@
+sample,hifi_reads,ont_reads,hic_reads_1,hic_reads_2,genome_size
+sample1,data/hifi_reads.fastq.gz,data/ont_reads.fastq.gz,data/hic_R1.fastq.gz,data/hic_R2.fastq.gz,3g
