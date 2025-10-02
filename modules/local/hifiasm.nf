@@ -5,7 +5,7 @@
 
 process HIFIASM {
     tag "$meta.id"
-    label 'process_very_high'
+    label 'process_high'
     publishDir "${params.outdir}/assembly", mode: params.publish_dir_mode
 
     conda "bioconda::hifiasm=0.25.0"
