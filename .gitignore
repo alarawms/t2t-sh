@@ -37,3 +37,6 @@ __pycache__/
 *.tmp
 *.log
 *.bak
+
+EEXECUTION_STRATEGY.md
+plan.md 
