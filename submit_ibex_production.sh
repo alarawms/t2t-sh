@@ -1,17 +1,18 @@
 #!/bin/bash
 #SBATCH --job-name=t2t-assembly
-#SBATCH --time=24:00:00
+#SBATCH --time=72:00:00
 #SBATCH --nodes=1
-#SBATCH --cpus-per-task=16
-#SBATCH --mem=128G
-#SBATCH --partition=batch
+#SBATCH --cpus-per-task=32
+#SBATCH --mem=500G
+#SBATCH --partition=largemem
 #SBATCH --output=logs/t2t_%j.out
 #SBATCH --error=logs/t2t_%j.err
 #SBATCH --mail-type=END,FAIL
 #SBATCH --mail-user=$USER@kaust.edu.sa
 
-# T2T Genome Assembly Pipeline - KAUST Ibex Submission Script
-# Usage: sbatch submit_ibex.sh <samplesheet.csv> <output_dir>
+# T2T Genome Assembly Pipeline - KAUST Ibex Submission Script (PRODUCTION)
+# High-resource configuration for large genomes
+# Usage: sbatch submit_ibex_production.sh <samplesheet.csv> <output_dir>
 
 # Exit on error
 set -e
@@ -57,9 +58,9 @@ nextflow run main.nf \
     -profile kaust \
     --input "$SAMPLESHEET" \
     --outdir "$OUTDIR" \
-    --max_cpus 16 \
-    --max_memory 128.GB \
-    --max_time 24.h \
+    --max_cpus 32 \
+    --max_memory 500.GB \
+    --max_time 72.h \
     -resume
 
 # Check exit status
