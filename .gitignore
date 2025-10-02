@@ -1,0 +1,39 @@
+# Nextflow
+.nextflow*
+work/
+results/
+.nextflow.log*
+
+# Singularity
+*.sif
+*.img
+singularity/
+
+# Conda
+conda/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+
+# Test data (comment out if tracking test data)
+# test_data/*.fastq.gz
+# test_data/*.fasta
+
+# Temporary files
+*.tmp
+*.log
+*.bak
