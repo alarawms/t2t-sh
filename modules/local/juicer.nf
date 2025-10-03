@@ -37,12 +37,12 @@ process JUICER {
     mkdir -p ${prefix}/aligned
     mkdir -p ${prefix}/references
 
-    # Link Hi-C reads
-    ln -s ${hic_reads_1} ${prefix}/fastq/reads_R1.fastq.gz
-    ln -s ${hic_reads_2} ${prefix}/fastq/reads_R2.fastq.gz
+    # Link Hi-C reads with absolute paths
+    ln -s \$(readlink -f ${hic_reads_1}) ${prefix}/fastq/reads_R1.fastq.gz
+    ln -s \$(readlink -f ${hic_reads_2}) ${prefix}/fastq/reads_R2.fastq.gz
 
-    # Link assembly as reference
-    ln -s ${assembly} ${prefix}/references/assembly.fasta
+    # Link assembly as reference with absolute path
+    ln -s \$(readlink -f ${assembly}) ${prefix}/references/assembly.fasta
 
     # Index assembly with BWA
     bwa index ${prefix}/references/assembly.fasta
