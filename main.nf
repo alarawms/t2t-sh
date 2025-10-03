@@ -35,7 +35,7 @@ include { GFA_TO_FASTA  } from './modules/local/gfa_to_fasta'
 include { BUSCO         } from './modules/local/busco'
 include { JUICER        } from './modules/local/juicer'
 include { THREEDNA      } from './modules/local/threedna'
-include { LR_GAPCLOSER  } from './modules/local/lr_gapcloser'
+include { TGSGAPCLOSER  } from './modules/local/tgsgapcloser'
 
 /*
 ========================================================================================
@@ -142,11 +142,11 @@ workflow T2T_ASSEMBLY {
 
     if (ch_gapcloser_input) {
         //
-        // MODULE: LR_Gapcloser - Fill gaps with ONT reads
+        // MODULE: TGS-GapCloser - Fill gaps with ONT reads
         //
-        LR_GAPCLOSER(ch_gapcloser_input)
-        ch_versions = ch_versions.mix(LR_GAPCLOSER.out.versions)
-        ch_final_assembly = LR_GAPCLOSER.out.assembly
+        TGSGAPCLOSER(ch_gapcloser_input)
+        ch_versions = ch_versions.mix(TGSGAPCLOSER.out.versions)
+        ch_final_assembly = TGSGAPCLOSER.out.assembly
     } else {
         ch_final_assembly = ch_scaffolded
     }

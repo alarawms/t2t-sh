@@ -1,85 +1,53 @@
-#!/usr/bin/env bash
-#
-# Verify that all container images exist and are accessible
-#
+#!/bin/bash
+# Verify all Singularity containers exist and are accessible
 
-set -euo pipefail
+set -e
 
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m'
+echo "Verifying Phase 3 Singularity containers..."
+echo "============================================="
 
-print_header() {
-    echo -e "${GREEN}========================================${NC}"
-    echo -e "${GREEN}$1${NC}"
-    echo -e "${GREEN}========================================${NC}"
-}
-
-print_info() {
-    echo -e "${YELLOW}[INFO]${NC} $1"
-}
-
-print_success() {
-    echo -e "${GREEN}[✓]${NC} $1"
-}
-
-print_error() {
-    echo -e "${RED}[✗]${NC} $1"
-}
-
-# Container images used in pipeline
 CONTAINERS=(
-    "quay.io/biocontainers/hifiasm:0.25.0--h5ca1c30_0"
-    "quay.io/biocontainers/busco:5.8.3--pyhdfd78af_1"
-    "quay.io/biocontainers/gawk:5.1.0"
+    "https://depot.galaxyproject.org/singularity/mulled-v2-fe8faa35dbf6dc65a0f7f5d4ea12e31a79f73e40:8110a70be2bfe7f75a2ea7f2a89cda4cc7732095-0"
+    "https://depot.galaxyproject.org/singularity/3d-dna:201008--h779adbc_1"
+    "https://depot.galaxyproject.org/singularity/tgsgapcloser:1.2.1--h43eeafb_0"
 )
 
-print_header "Container Image Verification"
+NAMES=(
+    "BWA+Samtools (Juicer)"
+    "3D-DNA"
+    "TGS-GapCloser"
+)
 
-echo "Checking availability of container images..."
-echo ""
+SUCCESS=0
+FAILED=0
 
-ERRORS=0
+for i in "${!CONTAINERS[@]}"; do
+    URL="${CONTAINERS[$i]}"
+    NAME="${NAMES[$i]}"
 
-for container in "${CONTAINERS[@]}"; do
-    print_info "Checking: $container"
-
-    # Extract registry and image
-    if [[ $container == quay.io/* ]]; then
-        # Remove quay.io/ and split by :
-        image_path="${container#quay.io/}"
-        repo="${image_path%:*}"
-        tag="${image_path#*:}"
-
-        # Check if image exists on Quay.io
-        url="https://quay.io/api/v1/repository/${repo}/tag/${tag}/images"
-
-        if curl -sf "$url" > /dev/null 2>&1; then
-            print_success "Available: $container"
-        else
-            print_error "NOT FOUND: $container"
-            ERRORS=$((ERRORS + 1))
-        fi
-    else
-        print_info "Skipping non-quay.io image: $container"
-    fi
     echo ""
+    echo "Checking: $NAME"
+    echo "URL: $URL"
+
+    # Check if URL is accessible
+    if curl --head --silent --fail "$URL" > /dev/null 2>&1; then
+        echo "✓ Container exists and is accessible"
+        ((SUCCESS++))
+    else
+        echo "✗ Container NOT accessible"
+        ((FAILED++))
+    fi
 done
 
 echo ""
-print_header "Summary"
+echo "============================================="
+echo "Results: $SUCCESS accessible, $FAILED failed"
+echo "============================================="
 
-if [ $ERRORS -eq 0 ]; then
-    print_success "All $((${#CONTAINERS[@]})) container images are available!"
-    echo ""
-    echo "You can now run the pipeline with:"
-    echo "  nextflow run main.nf -profile docker --input samples.csv"
-    exit 0
-else
-    print_error "Found $ERRORS missing container image(s)"
-    echo ""
-    echo "Please check the container tags or update modules to use available versions."
-    echo "Visit https://quay.io/repository/biocontainers/ to find available tags."
+if [ $FAILED -gt 0 ]; then
+    echo "ERROR: Some containers are not accessible!"
     exit 1
+else
+    echo "SUCCESS: All containers verified!"
+    exit 0
 fi
