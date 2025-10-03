@@ -8,7 +8,7 @@
 #SBATCH --output=logs/t2t_%j.out
 #SBATCH --error=logs/t2t_%j.err
 #SBATCH --mail-type=END,FAIL
-#SBATCH --mail-user=$USER@kaust.edu.sa
+#SBATCH --mail-user=mohammed.alarawi@kaust.edu.sa
 
 # T2T Genome Assembly Pipeline - KAUST Ibex Submission Script (PRODUCTION)
 # High-resource configuration for large genomes
