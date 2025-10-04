@@ -21,7 +21,7 @@ mkdir -p logs
 
 # Load required modules
 module purge
-module load nextflow/25.04.5
+module load nextflow
 module load singularity
 
 # Input validation
